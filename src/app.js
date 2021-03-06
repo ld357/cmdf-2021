@@ -5,6 +5,8 @@ const bodyParser = require('body-parser');
 const FbAuth = require('../util/FbAuth')
 const cors = require('cors')
 
+const { signup, login } = require('./route/UserRouter')
+
 class App {
     async init() {
         try {
@@ -25,10 +27,12 @@ class App {
     async registerHandlersAndRoutes(app) {
         app.use(bodyParser.json());
         app.use(cors({ origin: true }))
-        app.get('/', FbAuth, (req, res) => res.send('Hello World'));
+        app.get('/', (req, res) => res.send('Hello World'));
 
         // initialize routers and controllers
         // and link with app.use
+        app.post("/signup", signup);
+        app.post("/login", login);
     }
 }
 
