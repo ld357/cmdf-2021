@@ -1,0 +1,22 @@
+{
+  "name": "cmdf-2021",
+  "version": "1.0.0",
+  "description": "cmd-f project 2021",
+  "main": "app.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ld357/cmdf-2021.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/ld357/cmdf-2021/issues"
+  },
+  "homepage": "https://github.com/ld357/cmdf-2021#readme",
+  "dependencies": {
+    "express": "^4.17.1"
+  }
+}
