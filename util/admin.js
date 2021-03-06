@@ -1,9 +1,7 @@
 const admin = require("firebase-admin")
 
-const credentials = require('./credentials.json')
-
 admin.initializeApp({
-    credential: admin.credential.cert(credentials),
+    credential: admin.credential.applicationDefault(),
     databaseURL: 'https://cmd-f-2021.firebaseio.com'
 })
 
