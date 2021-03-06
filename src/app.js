@@ -2,6 +2,8 @@ const dotenv = require('dotenv');
 dotenv.config();
 const express = require('express');
 const bodyParser = require('body-parser');
+const FbAuth = require('../util/FbAuth')
+const cors = require('cors')
 
 class App {
     async init() {
@@ -22,8 +24,8 @@ class App {
 
     async registerHandlersAndRoutes(app) {
         app.use(bodyParser.json());
-
-        app.get('/', (req, res) => res.send('Hello World'));
+        app.use(cors({ origin: true }))
+        app.get('/', FbAuth, (req, res) => res.send('Hello World'));
 
         // initialize routers and controllers
         // and link with app.use
