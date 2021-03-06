@@ -1,9 +1,9 @@
-import * as dotenv from 'dotenv';
+const dotenv = require('dotenv');
 dotenv.config();
-import express from 'express';
-import bodyParser from 'body-parser';
+const express = require('express');
+const bodyParser = require('body-parser');
 
-export class App {
+class App {
     async init() {
         try {
             const app = express();
@@ -25,19 +25,8 @@ export class App {
 
         app.get('/', (req, res) => res.send('Hello World'));
 
-        const promotionRouter = new PromotionRouter(promotionController);
-        app.use(Route.PROMOTIONS, promotionRouter.getRoutes());
-
-        const enumController = new EnumController();
-        const enumRouter = new EnumRouter(enumController);
-        app.use(Route.ENUMS, enumRouter.getRoutes());
-
-        const userController = new UserController();
-        const userRouter = new UserRouter(userController);
-        app.use(Route.USERS, userRouter.getRoutes());
-
-        // middleware needs to be added at end
-        app.use(errorHandler);
+        // initialize routers and controllers
+        // and link with app.use
     }
 }
 
