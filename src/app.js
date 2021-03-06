@@ -3,9 +3,9 @@ dotenv.config();
 const express = require('express');
 const bodyParser = require('body-parser');
 const FbAuth = require('../util/FbAuth')
-const cors = require('cors')
-
-const { signup, login } = require('./route/UserRouter')
+const cors = require('cors');
+const UserController = require('./controller/UserController');
+const UserRouter = require('./route/UserRouter');
 
 class App {
     async init() {
@@ -32,8 +32,7 @@ class App {
 
         // initialize routers and controllers
         // and link with app.use
-        app.post("/signup", signup);
-        app.post("/login", login);
+        app.use('/users', new UserRouter(UserController).getRoutes())
     }
 
     setupData() {
