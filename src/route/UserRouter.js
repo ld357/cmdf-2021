@@ -1,6 +1,6 @@
-import { Router } from 'express';
+const { Router } = require('express')
 
-export class UserRouter {
+module.exports = class UserRouter {
     userRouter = Router();
     userController;
 
@@ -9,7 +9,9 @@ export class UserRouter {
     }
 
     getRoutes() {
-      // define endpoints
+        // define endpoints
+        this.userRouter.post('/signup', this.userController.signup)
+        this.userRouter.post('/login', this.userController.login)
         return this.userRouter;
     }
 }
