@@ -84,6 +84,16 @@ exports.login = (req, res) => {
   exports.getUsers = (req, res) => {
     User.findAll().then(res.json).catch(console.error)
   }
+
+  exports.getUserHabits = (req, res) => 
+    User.findAll({
+      where: { userId: req.params.user_id }
+    })
+    .then(res.json)
+    .catch(err => {
+      console.error(err)
+      res.status(400).json({message: `Something went wrong at getting User Habits: ${err}`})
+    })
   
   exports.postUserHabit = (req, res) => {
     const ownerId = UserHabit.findOne({
@@ -99,6 +109,10 @@ exports.login = (req, res) => {
       endDuration: req.body.endDuration
     })
     .then(res.json)
+    .catch(err => {
+      console.error(err)
+      res.status(400).json({message: `Something went wrong at posting UserHabit: ${err}`})
+    })
   }
 
   exports.postNewHabit = (req, res) => {
@@ -120,6 +134,6 @@ exports.login = (req, res) => {
     .then(res.json)
     .catch(err => {
       console.error(err)
-      res.status(400).json(err)
+      res.status(400).json({message: `Something went wrong at posting a new habit: ${err}`})
     })
   }
