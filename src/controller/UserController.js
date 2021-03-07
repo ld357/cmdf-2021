@@ -1,14 +1,9 @@
-const { admin, db } = require("../../util/admin")
+const { User } = require('./models')
+const config = require("../../util/firebaseConfig")
+const firebase = require("firebase")
+const { validateSignupData, validateLoginData } = require("../../util/validators")
 
-const config = require("../../util/firebaseConfig");
-
-const firebase = require("firebase");
 firebase.initializeApp(config)
-
-const {
-    validateSignupData,
-    validateLoginData
-  } = require("../../util/validators")
 
 exports.signup = (req, res) => {
     const newUser = {
@@ -22,38 +17,27 @@ exports.signup = (req, res) => {
 
     if (!valid) return res.status(400).json(errors)
 
-    let token, userId;
-    db.doc(`/users/${newUser.handle}`)
-        .get()
-        .then((doc) => {
-        if (doc.exists) {
+    User.findAll({ where: { email: req.body.email } })
+        .then(data => {
+        if (data) {
             return res
             .status(400)
             .json({ handle: `This username is already taken` })
         } else {
+            User.create({ 
+              first_name: req.body.first_name,
+              last_name: req.body.last_name,
+              email: req.body.email,
+              bio : req.body.bio,
+             })
             return firebase
             .auth()
             .createUserWithEmailAndPassword(newUser.email, newUser.password)
         }
         })
-        .then((data) => {
-        userId = data.user.uid;
-        return data.user.getIdToken()
-        })
-        .then((idToken) => {
-        token = idToken
-        const userCredentials = {
-            handle: newUser.handle,
-            email: newUser.email,
-            createdAt: new Date().toISOString(),
-            userId,
-        }
-        return db.doc(`/users/${newUser.handle}`).set(userCredentials)
-        })
-        .then(() => {
-        return res.status(201).json({ token });
-        })
-        .catch((err) => {
+        .then(data => data.user.getIdToken())
+        .then(token => res.status(201).json({ token }))
+        .catch(err => {
         console.error(err)
         if (err.code === "auth/email-already-in-use") {
             return res.status(400).json({ email: "Email is already in use" })
@@ -78,13 +62,9 @@ exports.login = (req, res) => {
     firebase
       .auth()
       .signInWithEmailAndPassword(user.email, user.password)
-      .then((data) => {
-        return data.user.getIdToken()
-      })
-      .then((token) => {
-        return res.json({ token })
-      })
-      .catch((err) => {
+      .then(data => data.user.getIdToken())
+      .then(token => res.json({ token }))
+      .catch(err => {
         console.error(err)
         return res
           .status(403)
