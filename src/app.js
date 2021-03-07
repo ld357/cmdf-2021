@@ -2,12 +2,14 @@ const dotenv = require('dotenv');
 dotenv.config();
 const express = require('express');
 const bodyParser = require('body-parser');
+const models = require("./models");
 
 class App {
     async init() {
         try {
             const app = express();
             await this.registerHandlersAndRoutes(app);
+            this.setupData();
 
             const PORT = 8000;
             app.listen(PORT, () => {
@@ -27,6 +29,16 @@ class App {
 
         // initialize routers and controllers
         // and link with app.use
+    }
+
+    setupData() {
+       models.setupDatabase();
+       models.handleUserTableAndSampleData();
+       models.handleHabitTypesTableAndSampleData();
+       models.handleHabitsTableAndSampleData();
+       models.handleUserHabitsTableAndSampleData();
+       models.setupAssociations();
+       models.addSampleData().then(() => { return; });
     }
 }
 
