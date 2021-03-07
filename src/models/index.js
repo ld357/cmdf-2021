@@ -1,6 +1,9 @@
 'use strict';
 const seq = require("sequelize");
 const Sequelize = require('sequelize-cockroachdb');
+const fs = require('fs');
+const dotenv = require('dotenv');
+dotenv.config();
 
 let user;
 let habitTypes;
@@ -11,22 +14,18 @@ let sequelize;
 exports.setupDatabase= () => {
     sequelize = new Sequelize({
         dialect: "postgres",
-        username: "root",
-        password: "admin",
-        host: "localhost",
-        port: 51703,
-        database: "cmdf",
+        username: "lily",
+        password: process.env.COCKROACH_DB_PASSWORD,
+        host: process.env.COCKROACH_DB_HOST,
+        port: 26257,
+        database: process.env.COCKROACH_DB_DATABASE,
         dialectOptions: {
             ssl: {
-                rejectUnauthorized: false,
-                // For secure connection:
-                /*ca: fs.readFileSync('certs/ca.crt')
-                          .toString()*/
+                ca: fs.readFileSync(process.env.COCKROACH_DB_CERT_PATH).toString()
             },
         },
         logging: false,
     });
-    console.log("finished setup");
 }
 
 exports.handleUserTableAndSampleData = () => {
@@ -56,7 +55,6 @@ exports.handleUserTableAndSampleData = () => {
             allowNull: false,
         },
     });
-    console.log("finished user setup");
 }
 
 exports.handleHabitTypesTableAndSampleData = () => {

@@ -1,5 +1,3 @@
-const dotenv = require('dotenv');
-dotenv.config();
 const express = require('express');
 const bodyParser = require('body-parser');
 const models = require("./models");
@@ -38,7 +36,7 @@ class App {
        models.handleHabitsTableAndSampleData();
        models.handleUserHabitsTableAndSampleData();
        models.setupAssociations();
-       models.addSampleData().then(() => { return; });
+       // models.addSampleData().then(() => { return; });
     }
 }
 
