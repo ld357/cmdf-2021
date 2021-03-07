@@ -4,6 +4,7 @@ const FbAuth = require('../util/FbAuth')
 const cors = require('cors');
 const UserController = require('./controller/UserController');
 const UserRouter = require('./route/UserRouter');
+const models = require("./models");
 
 class App {
     async init() {
@@ -28,9 +29,8 @@ class App {
         app.use(cors({ origin: true }))
         app.get('/', (req, res) => res.send('Hello World'));
 
-        // initialize routers and controllers
-        // and link with app.use
-        app.use('/users', new UserRouter(UserController).getRoutes())
+        const userRouter = new UserRouter(UserController);
+        app.use('/users', userRouter.getRoutes())
     }
 
     setupData() {
