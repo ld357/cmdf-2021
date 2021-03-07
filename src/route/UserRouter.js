@@ -1,5 +1,5 @@
 const { Router } = require('express')
-const { FbAuth } = require('../../util/FbAuth')
+const FbAuth = require('../../util/FbAuth')
 
 module.exports = class UserRouter {
     userRouter = Router();

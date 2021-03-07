@@ -6,6 +6,7 @@ const FbAuth = require('../util/FbAuth')
 const cors = require('cors');
 const UserController = require('./controller/UserController');
 const UserRouter = require('./route/UserRouter');
+const models = require('./models')
 
 class App {
     async init() {
