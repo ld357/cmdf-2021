@@ -5,9 +5,9 @@ const fs = require('fs');
 const dotenv = require('dotenv');
 dotenv.config();
 
-let user;
+let users;
 let habitTypes;
-let habit;
+let habits;
 let userHabits;
 
 const sequelize = new Sequelize({
@@ -26,7 +26,7 @@ const sequelize = new Sequelize({
 });
 
 exports.handleUserTableAndSampleData = () => {
-   user = sequelize.define('User', {
+   users = sequelize.define('Users', {
         id: {
             type: seq.DataTypes.UUID,
             primaryKey: true,
@@ -53,7 +53,15 @@ exports.handleUserTableAndSampleData = () => {
             allowNull: false,
         },
     });
-   return user;
+    users.associate = function() {
+        users.hasMany(userHabits, {
+            foreignKey: "userId",
+        });
+        users.hasMany(habits,{
+            foreignKey: "ownerId"
+        });
+    };
+   return users;
 }
 
 exports.handleHabitTypesTableAndSampleData = () => {
@@ -77,11 +85,16 @@ exports.handleHabitTypesTableAndSampleData = () => {
             allowNull: false,
         },
     });
+    habitTypes.associate = function() {
+        habitTypes.hasMany(habits, {
+            foreignKey: "habitTypeId",
+        });
+    }
     return habitTypes;
 }
 
 exports.handleHabitsTableAndSampleData = () => {
-    habit = sequelize.define('Habit', {
+    habits = sequelize.define('Habits', {
         id: {
             type: seq.DataTypes.UUID,
             primaryKey: true,
@@ -98,6 +111,10 @@ exports.handleHabitsTableAndSampleData = () => {
         ownerId: {
             type: seq.DataTypes.UUID,
             allowNull: false,
+            references: {
+                model: "Users",
+                key: "id",
+            }
         },
         numOfLikes: {
             type: seq.DataTypes.INTEGER,
@@ -110,6 +127,10 @@ exports.handleHabitsTableAndSampleData = () => {
         habitTypeId: {
             type: seq.DataTypes.UUID,
             allowNull: false,
+            references: {
+                model: "HabitTypes",
+                key: "id",
+            }
         },
         createdAt: {
             type: seq.DataTypes.DATE,
@@ -120,7 +141,22 @@ exports.handleHabitsTableAndSampleData = () => {
             allowNull: false,
         },
     });
-    return habit;
+    habits.associate = function() {
+        habits.hasMany(userHabits, {
+            foreignKey: "habitId",
+        });
+
+        habits.belongsTo(users,{
+            foreignKey: "ownerId",
+            onDelete: "CASCADE",
+        });
+
+        habits.belongsTo(habitTypes, {
+            foreignKey: "habitTypeId",
+            onDelete: "CASCADE",
+        });
+    }
+    return habits;
 }
 
 exports.handleUserHabitsTableAndSampleData = () => {
@@ -133,10 +169,18 @@ exports.handleUserHabitsTableAndSampleData = () => {
         userId: {
             type: seq.DataTypes.UUID,
             allowNull: false,
+            references: {
+                model: "Users",
+                key: "id",
+            }
         },
         habitId: {
             type: seq.DataTypes.UUID,
             allowNull: false,
+            references: {
+                model: "Habits",
+                key: "id",
+            }
         },
         currentDuration: {
             type: seq.DataTypes.INTEGER,
@@ -155,43 +199,68 @@ exports.handleUserHabitsTableAndSampleData = () => {
             allowNull: false,
         },
     });
+    userHabits.associate = function() {
+        userHabits.belongsTo(users, {
+            foreignKey: "userId",
+            onDelete: "CASCADE",
+        });
+
+        userHabits.belongsTo(habits,{
+            foreignKey: "habitId",
+            onDelete: "CASCADE",
+        });
+    };
     return userHabits;
 }
 
 
 exports.setupAssociations = () => {
-    userHabits.belongsTo(user, {
-        foreignKey: "userId",
-        onDelete: "CASCADE",
-    });
 
-    habit.belongsTo(user,{
-        foreignKey: "ownerId",
-        onDelete: "CASCADE",
-    });
+    users.associate = function() {
+        users.hasMany(userHabits, {
+            foreignKey: "userId",
+        });
+        users.hasMany(habits,{
+            foreignKey: "ownerId"
+        });
+    };
 
-    userHabits.belongsTo(habit,{
-        foreignKey: "habitId",
-        onDelete: "CASCADE",
-    });
+    userHabits.associate = function() {
+        userHabits.belongsTo(users, {
+            foreignKey: "userId",
+            onDelete: "CASCADE",
+        });
 
-    habit.hasMany(userHabits, {
-        foreignKey: "habitId",
-    });
+        userHabits.belongsTo(habits,{
+            foreignKey: "habitId",
+            onDelete: "CASCADE",
+        });
+    };
 
-    habit.belongsTo(habitTypes, {
-        foreignKey: "habitTypeId",
-        onDelete: "CASCADE",
-    });
+    habits.associate = function() {
+        habits.hasMany(userHabits, {
+            foreignKey: "habitId",
+        });
 
-    habitTypes.hasMany(habit, {
-        foreignKey: "habitTypeId",
-    });
+        habits.belongsTo(users,{
+            foreignKey: "ownerId",
+            onDelete: "CASCADE",
+        });
 
-    user.hasMany(userHabits, {
-        foreignKey: "userId",
-    });
-    sequelize.sync();
+        habits.belongsTo(habitTypes, {
+            foreignKey: "habitTypeId",
+            onDelete: "CASCADE",
+        });
+    }
+
+
+    habitTypes.associate = function() {
+        habitTypes.hasMany(habits, {
+            foreignKey: "habitTypeId",
+        });
+    }
+
+    return sequelize.sync().then((r) => { return; });
 }
 
 exports.addSampleData = async () => {
@@ -220,9 +289,9 @@ exports.addSampleData = async () => {
     const habitTypeSix = { name: "Hobbies"};
 
     try {
-        const resultUserOne = await user.create(userOne);
-        const resultUserTwo = await user.create(userTwo);
-        const resultUserThree = await user.create(userThree);
+        const resultUserOne = await users.create(userOne);
+        const resultUserTwo = await users.create(userTwo);
+        const resultUserThree = await users.create(userThree);
 
         const resultHabitTypeOne = await habitTypes.create(habitTypeOne);
         const resultHabitTypeTwo = await habitTypes.create(habitTypeTwo);
@@ -235,9 +304,9 @@ exports.addSampleData = async () => {
         const habitTwo = { name: "It's Focus Time.", ownerId: resultUserTwo.id, numOfLikes: 0, description: "It's 2021, let's get focused!", endDuration: 30, habitTypeId: resultHabitTypeTwo.id};
         const habitThree = { name: "Tune into your wellness!", ownerId: resultUserThree.id, numOfLikes: 5, description: "Care about your mental well-being? Join our affirmations session!", endDuration: 10, habitTypeId: resultHabitTypeThree.id};
 
-        const resultHabitOne = await habit.create(habitOne);
-        const resultHabitTwo = await habit.create(habitTwo);
-        const resultHabitThree = await habit.create(habitThree);
+        const resultHabitOne = await habits.create(habitOne);
+        const resultHabitTwo = await habits.create(habitTwo);
+        const resultHabitThree = await habits.create(habitThree);
 
         const userHabitOne = { userId: resultUserOne.id, habitId: resultHabitOne.id, currentDuration: 3, endDuration: 10 };
         const userHabitTwo = { userId: resultUserThree.id, habitId: resultHabitOne.id, currentDuration: 1, endDuration: 60 };
@@ -256,7 +325,7 @@ exports.addSampleData = async () => {
 
 }
 
-module.exports.UserHabits = this.handleUserTableAndSampleData();
+module.exports.UserHabits = this.handleUserHabitsTableAndSampleData();
 module.exports.User = this.handleUserTableAndSampleData();
 module.exports.HabitTypes = this.handleHabitTypesTableAndSampleData();
 module.exports.Habit = this.handleHabitsTableAndSampleData();

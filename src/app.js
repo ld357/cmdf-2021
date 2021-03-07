@@ -42,7 +42,7 @@ class App {
        models.handleHabitsTableAndSampleData();
        models.handleUserHabitsTableAndSampleData();
        models.setupAssociations();
-       // models.addSampleData().then(() => { return; });
+       // return models.addSampleData().then(() => { return; });
     }
 }
 
