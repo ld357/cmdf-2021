@@ -4,7 +4,7 @@ install:
 	@touch .env
 	@echo "\n\n#$$(date)\n#export GOOGLE_APPLICATION_CREDENTIALS=Path to credentials.json\n" >> .env
 	@$(MAKE) node-modules
-	@echo "***************************************************\n\nOPEN .ENV AND CHANGE THE VARIABLE TO RUN YOUR ENVIRONMENT\n\nYOU CAN COMMENT OUT LINES WITH # AND HAVE MULTIPLE ENVIRONMENTS\n\nBEFORE RUNNING npm start YOU NEED TO RUN source .env\n\n***************************************************"
+	@echo "***************************************************\n\nOPEN .ENV AND CHANGE THE VARIABLE TO RUN YOUR ENVIRONMENT\n\nYOU CAN COMMENT OUT LINES WITH # AND HAVE MULTIPLE ENVIRONMENTS\n\n***************************************************"
 
 node-modules: package.json
 	npm install
