@@ -1,4 +1,4 @@
-const { User } = require('../models/index')
+const { User, UserHabits, HabitTypes, Habit } = require('../models/index')
 const config = require("../../util/firebaseConfig")
 const { admin } = require('../../util/admin')
 const firebase = require("firebase")
@@ -83,4 +83,57 @@ exports.login = (req, res) => {
 
   exports.getUsers = (req, res) => {
     User.findAll().then(res.json).catch(console.error)
+  }
+
+  exports.getUserHabits = (req, res) => 
+    User.findAll({
+      where: { userId: req.params.user_id }
+    })
+    .then(res.json)
+    .catch(err => {
+      console.error(err)
+      res.status(400).json({message: `Something went wrong at getting User Habits: ${err}`})
+    })
+  
+  exports.postUserHabit = (req, res) => {
+    const ownerId = UserHabit.findOne({
+      attributes: ['ownerId'],
+      where: { user_id: ownerId, habitId: req.body.habitId }
+    })
+
+    UserHabits.create({
+      userId: req.params.user_id,
+      ownerId,
+      habitId: req.body.habitId,
+      currentDuration: req.body.currentDuration,
+      endDuration: req.body.endDuration
+    })
+    .then(res.json)
+    .catch(err => {
+      console.error(err)
+      res.status(400).json({message: `Something went wrong at posting UserHabit: ${err}`})
+    })
+  }
+
+  exports.postNewHabit = (req, res) => {
+    Habit.create({
+      name: req.body.name,
+      description: req.body.description,
+      endDuration: req.body.endDuration,
+      habitTypeId: req.body.habitTypeId
+    })
+    .then(habit => 
+      UserHabits.create({
+        userId: req.params.user_id,
+        ownerId: req.params.user_id,
+        habitId: habit.id,
+        currentDuration: req.body.currentDuration,
+        endDuration: req.body.endDuration
+      })
+    )
+    .then(res.json)
+    .catch(err => {
+      console.error(err)
+      res.status(400).json({message: `Something went wrong at posting a new habit: ${err}`})
+    })
   }
