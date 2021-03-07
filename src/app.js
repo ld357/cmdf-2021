@@ -1,9 +1,10 @@
 const express = require('express');
 const bodyParser = require('body-parser');
-const FbAuth = require('../util/FbAuth')
 const cors = require('cors');
 const UserController = require('./controller/UserController');
+const HabitController = require('./controller/HabitController');
 const UserRouter = require('./route/UserRouter');
+const HabitRouter = require('./route/HabitRouter');
 const models = require("./models");
 
 class App {
@@ -30,11 +31,12 @@ class App {
         app.get('/', (req, res) => res.send('Hello World'));
 
         const userRouter = new UserRouter(UserController);
-        app.use('/users', userRouter.getRoutes())
+        const habitsRouter = new HabitRouter(HabitController);
+        app.use('/users', userRouter.getRoutes());
+        app.use('/habits', habitsRouter.getRoutes())
     }
 
     setupData() {
-       models.setupDatabase();
        models.handleUserTableAndSampleData();
        models.handleHabitTypesTableAndSampleData();
        models.handleHabitsTableAndSampleData();

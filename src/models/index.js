@@ -9,30 +9,28 @@ let user;
 let habitTypes;
 let habit;
 let userHabits;
-let sequelize;
 
-exports.setupDatabase= () => {
-    sequelize = new Sequelize({
-        dialect: "postgres",
-        username: "lily",
-        password: process.env.COCKROACH_DB_PASSWORD,
-        host: process.env.COCKROACH_DB_HOST,
-        port: 26257,
-        database: process.env.COCKROACH_DB_DATABASE,
-        dialectOptions: {
-            ssl: {
-                ca: fs.readFileSync(process.env.COCKROACH_DB_CERT_PATH).toString()
-            },
+const sequelize = new Sequelize({
+    dialect: "postgres",
+    username: "lily",
+    password: process.env.COCKROACH_DB_PASSWORD,
+    host: process.env.COCKROACH_DB_HOST,
+    port: 26257,
+    database: process.env.COCKROACH_DB_DATABASE,
+    dialectOptions: {
+        ssl: {
+            ca: fs.readFileSync(process.env.COCKROACH_DB_CERT_PATH).toString()
         },
-        logging: false,
-    });
-}
+    },
+    logging: false,
+});
 
 exports.handleUserTableAndSampleData = () => {
    user = sequelize.define('User', {
         id: {
             type: seq.DataTypes.UUID,
             primaryKey: true,
+            defaultValue: seq.DataTypes.UUIDV4,
         },
         firstName: {
             type: seq.DataTypes.STRING,
@@ -55,6 +53,7 @@ exports.handleUserTableAndSampleData = () => {
             allowNull: false,
         },
     });
+   return user;
 }
 
 exports.handleHabitTypesTableAndSampleData = () => {
@@ -63,6 +62,7 @@ exports.handleHabitTypesTableAndSampleData = () => {
         id: {
             type: seq.DataTypes.UUID,
             primaryKey: true,
+            defaultValue: seq.DataTypes.UUIDV4,
         },
         name: {
             type: seq.DataTypes.STRING,
@@ -77,6 +77,7 @@ exports.handleHabitTypesTableAndSampleData = () => {
             allowNull: false,
         },
     });
+    return habitTypes;
 }
 
 exports.handleHabitsTableAndSampleData = () => {
@@ -84,6 +85,7 @@ exports.handleHabitsTableAndSampleData = () => {
         id: {
             type: seq.DataTypes.UUID,
             primaryKey: true,
+            defaultValue: seq.DataTypes.UUIDV4,
         },
         name: {
             type: seq.DataTypes.STRING,
@@ -91,6 +93,14 @@ exports.handleHabitsTableAndSampleData = () => {
         },
         description: {
             type: seq.DataTypes.STRING,
+            allowNull: false,
+        },
+        ownerId: {
+            type: seq.DataTypes.UUID,
+            allowNull: false,
+        },
+        numOfLikes: {
+            type: seq.DataTypes.INTEGER,
             allowNull: false,
         },
         endDuration: {
@@ -110,19 +120,17 @@ exports.handleHabitsTableAndSampleData = () => {
             allowNull: false,
         },
     });
+    return habit;
 }
 
 exports.handleUserHabitsTableAndSampleData = () => {
-    userHabits =  sequelize.define('UserHabits', {
+    userHabits = sequelize.define('UserHabits', {
         id: {
             type: seq.DataTypes.UUID,
             primaryKey: true,
+            defaultValue: seq.DataTypes.UUIDV4,
         },
         userId: {
-            type: seq.DataTypes.UUID,
-            allowNull: false,
-        },
-        ownerId: {
             type: seq.DataTypes.UUID,
             allowNull: false,
         },
@@ -147,6 +155,7 @@ exports.handleUserHabitsTableAndSampleData = () => {
             allowNull: false,
         },
     });
+    return userHabits;
 }
 
 
@@ -156,7 +165,7 @@ exports.setupAssociations = () => {
         onDelete: "CASCADE",
     });
 
-    userHabits.belongsTo(user,{
+    habit.belongsTo(user,{
         foreignKey: "ownerId",
         onDelete: "CASCADE",
     });
@@ -187,72 +196,68 @@ exports.setupAssociations = () => {
 
 exports.addSampleData = async () => {
     const userOne = {
-        id: "603cc548-a359-4908-b054-a82bbf5abb00",
         firstName: "Sharon",
         lastName: "He",
         bio: "Ready to focus on my physical wellness!"
     };
     const userTwo = {
-        id: "603cc548-a359-4908-b054-a82bbf5abb01",
         firstName: "Lily",
         lastName: "Du",
         bio: "Excited to empower one another!"
     };
     const userThree = {
-        id: "603cc548-a359-4908-b054-a82bbf5abb02",
         firstName: "Merissa",
         lastName: "Li",
         bio: "3,2,1- let's start a habit!"
     };
 
 
-    const habitTypeOne = { id: "403cc548-a359-4908-b054-a82bbf5abb06", name: "Physical Wellness" };
-    const habitTypeTwo = { id: "403cc548-a359-4908-b054-a82bbf5abb07", name: "Productivity" };
-    const habitTypeThree = { id: "403cc548-a359-4908-b054-a82bbf5abb08", name: "Mental Wellness" };
-    const habitTypeFour = { id: "403cc548-a359-4908-b054-a82bbf5abb09", name: "Social Connections" };
-    const habitTypeFive = { id: "403cc548-a359-4908-b054-a82bbf5abb10", name: "Growth"};
-    const habitTypeSix = { id: "403cc548-a359-4908-b054-a82bbf5abb11", name: "Hobbies"};
-
-    const habitOne = { id: "503cc548-a359-4908-b054-a82bbf5abb03", name: "Let's Get Fit!", description: "Are you interested in morning runs? Join us!", endDuration: 90, habitTypeId: "403cc548-a359-4908-b054-a82bbf5abb06"};
-    const habitTwo = { id: "503cc548-a359-4908-b054-a82bbf5abb04", name: "It's Focus Time.", description: "It's 2021, let's get focused!", endDuration: 30, habitTypeId: "403cc548-a359-4908-b054-a82bbf5abb07"};
-    const habitThree = { id: "503cc548-a359-4908-b054-a82bbf5abb05", name: "Tune into your wellness!", description: "Care about your mental well-being? Join our affirmations session!", endDuration: 10, habitTypeId: "403cc548-a359-4908-b054-a82bbf5abb08"};
-
-    const userHabitOne = { id: "303cc548-a359-4908-b054-a82bbf5abb12", userId: "603cc548-a359-4908-b054-a82bbf5abb00", ownerId: "603cc548-a359-4908-b054-a82bbf5abb00", habitId: "503cc548-a359-4908-b054-a82bbf5abb03", currentDuration: 3, endDuration: 10 };
-    const userHabitTwo = { id: "303cc548-a359-4908-b054-a82bbf5abb13", userId: "603cc548-a359-4908-b054-a82bbf5abb02", ownerId: "603cc548-a359-4908-b054-a82bbf5abb00", habitId: "503cc548-a359-4908-b054-a82bbf5abb03", currentDuration: 1, endDuration: 60 };
-    const userHabitThree = { id: "303cc548-a359-4908-b054-a82bbf5abb14", userId: "603cc548-a359-4908-b054-a82bbf5abb01", ownerId: "603cc548-a359-4908-b054-a82bbf5abb01", habitId: "503cc548-a359-4908-b054-a82bbf5abb04", currentDuration: 4, endDuration: 9 };
-    const userHabitFour = { id: "303cc548-a359-4908-b054-a82bbf5abb15", userId: "603cc548-a359-4908-b054-a82bbf5abb00", ownerId: "603cc548-a359-4908-b054-a82bbf5abb01", habitId: "503cc548-a359-4908-b054-a82bbf5abb04", currentDuration: 10, endDuration: 80 };
-    const userHabitFive = { id: "303cc548-a359-4908-b054-a82bbf5abb16", userId: "603cc548-a359-4908-b054-a82bbf5abb02", ownerId: "603cc548-a359-4908-b054-a82bbf5abb02", habitId: "503cc548-a359-4908-b054-a82bbf5abb05", currentDuration: 5, endDuration: 7 };
+    const habitTypeOne = { name: "Physical Wellness" };
+    const habitTypeTwo = { name: "Productivity" };
+    const habitTypeThree = { name: "Mental Wellness" };
+    const habitTypeFour = { name: "Social Connections" };
+    const habitTypeFive = { name: "Growth"};
+    const habitTypeSix = { name: "Hobbies"};
 
     try {
-        await user.create(userOne);
-        await user.create(userTwo);
-        await user.create(userThree);
+        const resultUserOne = await user.create(userOne);
+        const resultUserTwo = await user.create(userTwo);
+        const resultUserThree = await user.create(userThree);
 
-        await habitTypes.create(habitTypeOne);
-        await habitTypes.create(habitTypeTwo);
-        await habitTypes.create(habitTypeThree);
-        await habitTypes.create(habitTypeFour);
-        await habitTypes.create(habitTypeFive);
-        await habitTypes.create(habitTypeSix);
+        const resultHabitTypeOne = await habitTypes.create(habitTypeOne);
+        const resultHabitTypeTwo = await habitTypes.create(habitTypeTwo);
+        const resultHabitTypeThree = await habitTypes.create(habitTypeThree);
+        const resultHabitTypeFour = await habitTypes.create(habitTypeFour);
+        const resultHabitTypeFive = await habitTypes.create(habitTypeFive);
+        const resultHabitTypeSix = await habitTypes.create(habitTypeSix);
 
-        await habit.create(habitOne);
-        await habit.create(habitTwo);
-        await habit.create(habitThree);
+        const habitOne = { name: "Let's Get Fit!", ownerId: resultUserOne.id, numOfLikes: 3, description: "Are you interested in morning runs? Join us!", endDuration: 90, habitTypeId: resultHabitTypeOne.id};
+        const habitTwo = { name: "It's Focus Time.", ownerId: resultUserTwo.id, numOfLikes: 0, description: "It's 2021, let's get focused!", endDuration: 30, habitTypeId: resultHabitTypeTwo.id};
+        const habitThree = { name: "Tune into your wellness!", ownerId: resultUserThree.id, numOfLikes: 5, description: "Care about your mental well-being? Join our affirmations session!", endDuration: 10, habitTypeId: resultHabitTypeThree.id};
 
-        await userHabits.create(userHabitOne);
-        await userHabits.create(userHabitTwo);
-        await userHabits.create(userHabitThree);
-        await userHabits.create(userHabitFour);
-        await userHabits.create(userHabitFive);
+        const resultHabitOne = await habit.create(habitOne);
+        const resultHabitTwo = await habit.create(habitTwo);
+        const resultHabitThree = await habit.create(habitThree);
+
+        const userHabitOne = { userId: resultUserOne.id, habitId: resultHabitOne.id, currentDuration: 3, endDuration: 10 };
+        const userHabitTwo = { userId: resultUserThree.id, habitId: resultHabitOne.id, currentDuration: 1, endDuration: 60 };
+        const userHabitThree = { userId: resultUserTwo.id, habitId: resultHabitTwo.id, currentDuration: 4, endDuration: 9 };
+        const userHabitFour = { userId: resultUserOne.id, habitId: resultHabitTwo.id, currentDuration: 10, endDuration: 80 };
+        const userHabitFive = { userId: resultUserThree.id, habitId: resultHabitThree.id, currentDuration: 5, endDuration: 7 };
+
+        const resultUserHabitOne = await userHabits.create(userHabitOne);
+        const resultUserHabitTwo = await userHabits.create(userHabitTwo);
+        const resultUserHabitThree = await userHabits.create(userHabitThree);
+        const resultUserHabitFour = await userHabits.create(userHabitFour);
+        const resultUserHabitFive = await userHabits.create(userHabitFive);
     } catch (e) {
         console.log("error in setting up sample data", e);
     }
 
 }
 
-module.exports.UserHabits = userHabits;
-module.exports.User = user;
-module.exports.HabitTypes = habitTypes;
-module.exports.Habit = habit;
-module.exports.sequelize = sequelize;
+module.exports.UserHabits = this.handleUserTableAndSampleData();
+module.exports.User = this.handleUserTableAndSampleData();
+module.exports.HabitTypes = this.handleHabitTypesTableAndSampleData();
+module.exports.Habit = this.handleHabitsTableAndSampleData();
 module.exports.Sequelize = Sequelize;
