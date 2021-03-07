@@ -10,6 +10,12 @@ const FbAuth = (request, response, next) => {
     response.send({ message: "Invalid token" }).status(401)
   }
 
+  admin.auth().verifySessionCookie(request.cookies.session || '', true)
+  .catch(err => {
+    console.error(err)
+    response.redirect('/login')
+  })
+
   const token = headerToken.split(" ")[1]
   admin
     .auth()

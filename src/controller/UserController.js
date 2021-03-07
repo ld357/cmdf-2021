@@ -1,4 +1,4 @@
-const { User } = require('./models')
+const { User } = require('../models/index')
 const config = require("../../util/firebaseConfig")
 const { admin } = require('../../util/admin')
 const firebase = require("firebase")
@@ -78,14 +78,9 @@ exports.login = (req, res) => {
       })
   }
 
-  exports.getUser = (req, res) => {
-    const sessionCookie = req.cookies.session || ''
+  exports.getUser = (req, res) => 
+    User.findAll({ where: { id: req.params.user_id }, limit: 1 }).then(res.json).catch(console.error)
 
-    admin.auth().verifySessionCookie(sessionCookie, true)
-    .then(decodedToken => User.findAll({ where: { email: decodedToken.email }, limit: 1 }))
-    .then(res.status(201).json)
-    .catch(err => {
-      console.error(err)
-      return res.status(400).json({ message: 'No user found' })
-    })
+  exports.getUsers = (req, res) => {
+    User.findAll().then(res.json).catch(console.error)
   }
