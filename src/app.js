@@ -2,7 +2,10 @@ const dotenv = require('dotenv');
 dotenv.config();
 const express = require('express');
 const bodyParser = require('body-parser');
-const models = require("./models");
+const FbAuth = require('../util/FbAuth')
+const cors = require('cors');
+const UserController = require('./controller/UserController');
+const UserRouter = require('./route/UserRouter');
 
 class App {
     async init() {
@@ -24,11 +27,12 @@ class App {
 
     async registerHandlersAndRoutes(app) {
         app.use(bodyParser.json());
-
+        app.use(cors({ origin: true }))
         app.get('/', (req, res) => res.send('Hello World'));
 
         // initialize routers and controllers
         // and link with app.use
+        app.use('/users', new UserRouter(UserController).getRoutes())
     }
 
     setupData() {

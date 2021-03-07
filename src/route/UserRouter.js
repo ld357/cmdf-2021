@@ -1,6 +1,7 @@
-import { Router } from 'express';
+const { Router } = require('express')
+const { FbAuth } = require('../../util/FbAuth')
 
-export class UserRouter {
+module.exports = class UserRouter {
     userRouter = Router();
     userController;
 
@@ -9,7 +10,11 @@ export class UserRouter {
     }
 
     getRoutes() {
-      // define endpoints
+        // define endpoints
+        this.userRouter.post('/signup', this.userController.signup)
+        this.userRouter.post('/login', this.userController.login)
+        this.userRouter.get('/', FbAuth, this.userController.getUsers)
+        this.userRouter.get('/:user_id', FbAuth, this.userController.getUser)
         return this.userRouter;
     }
 }
