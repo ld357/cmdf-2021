@@ -1,5 +1,6 @@
 const { User } = require('./models')
 const config = require("../../util/firebaseConfig")
+const { admin } = require('../../util/admin')
 const firebase = require("firebase")
 const { validateSignupData, validateLoginData } = require("../../util/validators")
 
@@ -12,8 +13,8 @@ exports.signup = (req, res) => {
         confirmPassword: req.body.confirmPassword,
         handle: req.body.handle,
     }
-
     const { valid, errors } = validateSignupData(newUser)
+    const expiresIn = 60 * 60 * 24 * 5 * 1000
 
     if (!valid) return res.status(400).json(errors)
 
@@ -23,7 +24,7 @@ exports.signup = (req, res) => {
             return res
             .status(400)
             .json({ handle: `This username is already taken` })
-        } else {
+       } else {
             User.create({ 
               first_name: req.body.first_name,
               last_name: req.body.last_name,
@@ -31,12 +32,17 @@ exports.signup = (req, res) => {
               bio : req.body.bio,
              })
             return firebase
-            .auth()
-            .createUserWithEmailAndPassword(newUser.email, newUser.password)
-        }
-        })
+              .auth()
+              .createUserWithEmailAndPassword(newUser.email, newUser.password)
+        }})
         .then(data => data.user.getIdToken())
-        .then(token => res.status(201).json({ token }))
+        .then(token => admin.auth().createSessionCookie(token, { expiresIn }))
+        .then(sessionCookie => { // sessionCookie is the token
+          console.log(sessionCookie)
+          const options = { maxAge: expiresIn, httpOnly: true, secure: true }
+          res.cookie('session', sessionCookie, options)
+          return res.status(201).json({ status: 'Success' })
+        })
         .catch(err => {
         console.error(err)
         if (err.code === "auth/email-already-in-use") {
@@ -70,4 +76,16 @@ exports.login = (req, res) => {
           .status(403)
           .json({ general: "Wrong credentials, please try again" })
       })
+  }
+
+  exports.getUser = (req, res) => {
+    const sessionCookie = req.cookies.session || ''
+
+    admin.auth().verifySessionCookie(sessionCookie, true)
+    .then(decodedToken => User.findAll({ where: { email: decodedToken.email }, limit: 1 }))
+    .then(res.status(201).json)
+    .catch(err => {
+      console.error(err)
+      return res.status(400).json({ message: 'No user found' })
+    })
   }
