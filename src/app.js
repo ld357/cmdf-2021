@@ -1,6 +1,5 @@
 const express = require('express');
 const bodyParser = require('body-parser');
-const FbAuth = require('../util/FbAuth')
 const cors = require('cors');
 const UserController = require('./controller/UserController');
 const UserRouter = require('./route/UserRouter');
