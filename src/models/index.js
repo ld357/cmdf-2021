@@ -40,6 +40,10 @@ exports.handleUserTableAndSampleData = () => {
             type: seq.DataTypes.STRING,
             allowNull: false,
         },
+        email: {
+            type: seq.DataTypes.STRING,
+            allowNull: false
+        },
         bio: {
             type: seq.DataTypes.STRING,
             allowNull: false,
@@ -267,16 +271,19 @@ exports.addSampleData = async () => {
     const userOne = {
         firstName: "Sharon",
         lastName: "He",
+        email: 'sharon@gmail.com',
         bio: "Ready to focus on my physical wellness!"
     };
     const userTwo = {
         firstName: "Lily",
         lastName: "Du",
+        email: 'lily@gmail.com',
         bio: "Excited to empower one another!"
     };
     const userThree = {
         firstName: "Merissa",
         lastName: "Li",
+        email: 'merissa@gmail.com',
         bio: "3,2,1- let's start a habit!"
     };
 
